@@ -44,20 +44,25 @@ java -jar target/gateway-0.0.1-SNAPSHOT.jar
 |---|---|---|---|
 | GET | `/api/health` | Gateway liveness check | ✅ Phase 3 |
 | GET | `/actuator/health` | Spring Boot Actuator health | ✅ Phase 3 |
-| ALL | `/api/**` | Proxied to backend via ML check | ⏳ Phase 5/13 |
+| ALL | `/api/**` | Proxied to target backend (:3000) | ✅ Phase 5 (ML hook in Phase 13) |
 
 ## Configuration
 
 Edit `src/main/resources/application.properties`.
 
-Key properties (future phases):
+Active properties:
 
 ```properties
 server.port=8080
 backend.url=http://localhost:3000
-ml.service.url=http://localhost:8000
-security.ml.enabled=true
-security.anomaly.threshold=0.5
+```
+
+Future configuration placeholders:
+
+```properties
+# ml.service.url=http://localhost:8000
+# security.ml.enabled=true
+# security.anomaly.threshold=0.5
 ```
 
 ## Package Structure
@@ -66,23 +71,43 @@ security.anomaly.threshold=0.5
 com.krishna.gateway/
 ├── GatewayApplication.java        Main entry point
 ├── controller/
-│   └── HealthController.java      GET /api/health  (Phase 3)
-├── filter/                        Request interceptor (Phase 6)
-├── proxy/                         Backend proxy (Phase 5)
+│   ├── HealthController.java      GET /api/health (Phase 3)
+│   └── ProxyController.java       ALL /api/** catch-all proxy & pipeline trigger (Phase 5/6)
+├── filter/
+│   └── RequestInterceptor.java    Request interception orchestrator (Phase 6)
+├── model/
+│   ├── RequestMetadata.java       Raw request metadata DTO (Phase 6)
+│   └── SecurityDecision.java      Allow/block decision model (Phase 6)
+├── security/
+│   ├── MetadataExtractor.java     Safe metadata extraction & IP/header sanitization (Phase 6)
+│   └── SecurityPipeline.java      Security analysis contract & baseline ALLOW service (Phase 6)
+├── proxy/
+│   └── ProxyService.java          HTTP forwarding & error handling (Phase 5)
 ├── ml/                            ML service client (Phase 13)
-├── security/                      Decision engine (Phase 14)
+├── security/                      Decision engine & rules (Phase 14)
 └── logging/                       Security event logger (Phase 15)
 ```
 
 ## Testing
 
+Automated tests:
+
 ```bash
 mvn test
 ```
 
-Manual:
+Manual end-to-end testing (with both gateway :8080 and backend :3000 running):
 
 ```bash
+# Gateway local health
 curl http://localhost:8080/api/health
+
+# Actuator health
 curl http://localhost:8080/actuator/health
+
+# Proxied backend endpoints
+curl http://localhost:8080/api/products
+curl http://localhost:8080/api/users
+curl http://localhost:8080/api/backend/health
 ```
+

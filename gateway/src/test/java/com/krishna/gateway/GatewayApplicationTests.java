@@ -10,8 +10,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Phase 3 — Integration test for the health endpoint.
- * Verifies that GET /api/health returns HTTP 200 with the expected JSON body.
+ * Integration tests for the API Security Gateway.
+ *
+ * Verifies:
+ * 1. Health check routing (/api/health) handled locally by Gateway
+ * 2. Proxy routing (/api/products) properly attempts forwarding and returns 502 when backend is down
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -26,5 +29,14 @@ class GatewayApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("UP"))
                 .andExpect(jsonPath("$.service").value("API Security Gateway"));
+    }
+
+    @Test
+    void proxyEndpointReturns502WhenBackendUnavailable() throws Exception {
+        // When the downstream backend service is not running, proxy should return 502 Bad Gateway
+        mockMvc.perform(get("/api/products"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.error").value("Bad Gateway"))
+                .andExpect(jsonPath("$.message").exists());
     }
 }

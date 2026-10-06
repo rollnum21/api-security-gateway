@@ -1,3 +1,4 @@
+
 # Development Tasks — API Security Gateway
 
 > Tracking file for all project phases.
@@ -45,19 +46,19 @@
 ---
 
 ## Phase 4 — Target Backend API
-- [ ] Spring Boot project created in `backend/`
-- [ ] Port 3000 configured
-- [ ] `GET /api/backend/health` implemented
-- [ ] `GET /api/products` implemented
-- [ ] `GET /api/users` implemented
-- [ ] Endpoints tested with curl
+- [x] Spring Boot project created in `backend/`
+- [x] Port 3000 configured
+- [x] `GET /api/backend/health` implemented
+- [x] `GET /api/products` implemented
+- [x] `GET /api/users` implemented
+- [x] Endpoints tested with curl
 
 ---
 
 ## Phase 5 — Gateway → Backend Proxy
-- [ ] Proxy routing implemented in gateway
-- [ ] `curl http://localhost:8080/api/products` returns backend response
-- [ ] Proxy tested end-to-end
+- [x] Proxy routing implemented in gateway
+- [x] `curl http://localhost:8080/api/products` returns backend response
+- [x] Proxy tested end-to-end
 
 ---
 
